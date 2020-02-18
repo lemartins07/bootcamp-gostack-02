@@ -1,12 +1,29 @@
+import * as Yup from 'yup';
 import User from '../models/User';
 
 class UserController {
   // cria um novo usuário
   async store(req, res) {
+    // cria a validação dos dados de entrada do usuário
+    const schema = Yup.object().shape({
+      name: Yup.string().required(),
+      email: Yup.string()
+        .email()
+        .required(),
+      password: Yup.string()
+        .required()
+        .min(6),
+    });
+
+    // passa os dados do corpo da requisição para o schema definido validar
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails' });
+    }
+
     const userExists = await User.findOne({ where: { email: req.body.email } });
 
     if (userExists) {
-      return res.send(400).json({ error: 'User already exists' });
+      return res.status(400).json({ error: 'User already exists' });
     }
 
     const { id, name, email, provider } = await User.create(req.body);
@@ -20,6 +37,28 @@ class UserController {
   }
 
   async update(req, res) {
+    // cria a validação dos dados de entrada do usuário
+    const schema = Yup.object().shape({
+      name: Yup.string(),
+      email: Yup.string().email(),
+      password: Yup.string()
+        .min(6)
+        // valida somente se o oldPassword estiver preenchido
+        .when('oldPassword', (oldPassword, field) =>
+          oldPassword ? field.required() : field
+        ),
+      // valida se o password e confirmPassord são iguais,
+      // somente quando password estiver preenchido
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password ? field.required().oneOf([Yup.ref('password')]) : field
+      ),
+    });
+
+    // passa os dados do corpo da requisição para o schema definido validar
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails' });
+    }
+
     // pega os dados do corpo da requisição
     const { email, oldPassword } = req.body;
 
