@@ -34,6 +34,7 @@ routes.get('/schedule', ScheduleController.index);
 
 // Notification
 routes.get('/notifications', NotificationController.index);
+routes.put('/notifications/:id', NotificationController.update);
 
 // Rota para upload, utiliza o multer como middleare, para gerenciar o upload
 routes.post('/files', upload.single('file'), FileController.store);
