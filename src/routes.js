@@ -25,6 +25,7 @@ routes.get('/providers', ProviderController.index);
 
 // Appointments
 routes.post('/appointments', AppointmentController.store);
+routes.get('/appointments', AppointmentController.index);
 
 // Rota para upload, utiliza o multer como middleare, para gerenciar o upload
 routes.post('/files', upload.single('file'), FileController.store);
